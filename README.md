@@ -6,6 +6,8 @@ no refresh needed.
 
 **Status:** 🚧 In active development
 
+![CI](https://github.com/rutvikinuk/realtime-team-task-board/actions/workflows/ci.yml/badge.svg)
+
 ## Overview
 
 Realtime Team Task Board is a small, focused project management tool for
@@ -40,8 +42,13 @@ time.
 ├── database/           Migrations and seeders
 ├── routes/             API and web routes
 ├── frontend/            React (Vite) single-page app
+├── tests/               PHPUnit feature + unit tests
+├── .github/workflows/   CI (backend tests, frontend lint + build)
 └── docs/
-    └── ROADMAP.md       Sprint-by-sprint build plan
+    ├── ROADMAP.md       Sprint-by-sprint build plan
+    ├── AUDIT.md         Day-1 audit: what works / what is missing
+    ├── DEVLOG.md        Daily learning log
+    └── TRACKER.md       90-day plan tracker
 ```
 
 ## Getting Started
@@ -70,6 +77,20 @@ npm run dev
 The frontend dev server will be available at `http://127.0.0.1:5173` and
 talks to the Laravel API over REST (WebSocket sync via Reverb to follow in a
 later sprint — see the roadmap below).
+
+## Running the tests
+
+```bash
+php artisan test
+```
+
+Tests use an in-memory SQLite database, so no `.env` database setup is needed.
+The same command runs in GitHub Actions on every push (see
+`.github/workflows/ci.yml`), alongside `npm run lint` and `npm run build` for
+the frontend.
+
+> Note: the frontend is currently still the default Vite + React starter page.
+> The real board UI arrives in the Kanban UI sprint (see the roadmap).
 
 ## Roadmap
 

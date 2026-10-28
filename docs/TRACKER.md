@@ -6,7 +6,7 @@ The daily routine reads this file first, does the first row that is not `Done`, 
 
 | Plan day | Date | Day in block | Task | Status | Done on | Commit |
 |---|---|---|---|---|---|---|
-| 10 | 2026-10-28 | 1 | Audit: run locally, list what works/breaks, fix setup + README | Todo |  |  |
+| 10 | 2026-10-28 | 1 | Audit: run locally, list what works/breaks, fix setup + README | Done | 2026-10-28 |  |
 | 11 | 2026-10-29 | 2 | Boards/columns/tasks REST API with ordering | Todo |  |  |
 | 12 | 2026-10-30 | 3 | Live sync over Laravel Reverb (broadcast events) | Todo |  |  |
 | 13 | 2026-10-31 | 4 | Presence + drag-and-drop React kanban UI | Todo |  |  |
