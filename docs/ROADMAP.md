@@ -13,10 +13,10 @@ Backend data model, REST API, and frontend scaffold.
 - [x] `Board`, `TaskColumn`, `Task` models + migrations
 - [x] `TaskController` REST endpoints (`index`, `store`, `update`, `destroy`)
 - [x] React (Vite) frontend scaffolded in `frontend/`
-- [ ] `BoardController` and `TaskColumnController` REST endpoints
-- [ ] API resource classes (`BoardResource`, `TaskColumnResource`, `TaskResource`)
-- [ ] Seed data / factory for local development (sample board with columns + tasks)
-- [ ] Basic form request validation + error responses
+- [x] `BoardController` and `TaskColumnController` REST endpoints
+- [x] API resource classes (`BoardResource`, `TaskColumnResource`, `TaskResource`)
+- [x] Seed data / factory for local development (sample board with columns + tasks)
+- [x] Basic form request validation + error responses
 
 ## Sprint 2 — Kanban UI (Sep 20 – Sep 30)
 
