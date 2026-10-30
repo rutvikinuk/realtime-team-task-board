@@ -96,3 +96,14 @@ the frontend.
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the sprint-by-sprint plan
 between now and launch.
+
+### Try the board
+
+```bash
+php artisan db:seed      # sample board
+php artisan serve        # API on :8000
+cd frontend && npm run dev   # UI on :5173, /api is proxied to :8000
+```
+
+Drag a card to another column or reorder inside one; the move is sent to
+`PATCH /api/tasks/{id}/move` with `{task_column_id, position}`.

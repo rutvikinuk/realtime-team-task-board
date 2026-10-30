@@ -1,122 +1,132 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
+import { useCallback, useEffect, useState } from 'react'
+import { getBoard, listBoards, moveTaskOnServer } from './api.js'
+import { moveTask } from './board.js'
 import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
-
+function Card({ task, onDragStart }) {
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    <li
+      className="card"
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.effectAllowed = 'move'
+        e.dataTransfer.setData('text/plain', String(task.id))
+        onDragStart(task.id)
+      }}
+    >
+      {task.title}
+    </li>
   )
 }
 
-export default App
+function Column({ column, dragging, onDragStart, onDropAt }) {
+  const [over, setOver] = useState(false)
+
+  // Work out the drop index from the pointer's Y relative to each card.
+  function indexFromEvent(e) {
+    const cards = [...e.currentTarget.querySelectorAll('.card')]
+    const i = cards.findIndex((el) => {
+      const r = el.getBoundingClientRect()
+      return e.clientY < r.top + r.height / 2
+    })
+    return i === -1 ? cards.length : i
+  }
+
+  return (
+    <section
+      className={`column${over ? ' over' : ''}`}
+      onDragOver={(e) => {
+        if (dragging == null) return
+        e.preventDefault()
+        setOver(true)
+      }}
+      onDragLeave={() => setOver(false)}
+      onDrop={(e) => {
+        e.preventDefault()
+        setOver(false)
+        onDropAt(column.id, indexFromEvent(e))
+      }}
+    >
+      <h2>
+        {column.title} <span className="count">{column.tasks.length}</span>
+      </h2>
+      <ul>
+        {column.tasks.map((t) => (
+          <Card key={t.id} task={t} onDragStart={onDragStart} />
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+export default function App() {
+  const [board, setBoard] = useState(null)
+  const [status, setStatus] = useState('loading')
+  const [error, setError] = useState(null)
+  const [dragging, setDragging] = useState(null)
+
+  const load = useCallback(async () => {
+    try {
+      const boards = await listBoards()
+      if (boards.length === 0) {
+        setStatus('empty')
+        return
+      }
+      setBoard(await getBoard(boards[0].id))
+      setStatus('ready')
+    } catch (e) {
+      setError(e.message)
+      setStatus('error')
+    }
+  }, [])
+
+  useEffect(() => {
+    load()
+  }, [load])
+
+  async function handleDrop(columnId, index) {
+    const taskId = dragging
+    setDragging(null)
+    if (taskId == null || !board) return
+    const previous = board
+    setBoard(moveTask(board, taskId, columnId, index)) // optimistic
+    try {
+      await moveTaskOnServer(taskId, columnId, index)
+    } catch (e) {
+      setBoard(previous) // roll back
+      setError(`Could not move card: ${e.message}`)
+    }
+  }
+
+  if (status === 'loading') return <p className="note">Loading board…</p>
+  if (status === 'empty') return <p className="note">No boards yet. Run <code>php artisan db:seed</code>.</p>
+  if (status === 'error') {
+    return (
+      <p className="note">
+        Could not load the board ({error}). <button onClick={() => { setStatus('loading'); load() }}>Retry</button>
+      </p>
+    )
+  }
+
+  return (
+    <main>
+      <h1>{board.title}</h1>
+      {error && (
+        <p className="error" role="alert" onClick={() => setError(null)}>
+          {error}
+        </p>
+      )}
+      <div className="columns">
+        {board.columns.map((c) => (
+          <Column
+            key={c.id}
+            column={c}
+            dragging={dragging}
+            onDragStart={setDragging}
+            onDropAt={handleDrop}
+          />
+        ))}
+      </div>
+    </main>
+  )
+}

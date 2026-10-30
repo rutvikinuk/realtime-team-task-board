@@ -39,3 +39,19 @@ A Form Request is a class that owns "is this input acceptable?" so the controlle
 **Verification honesty:** PHP syntax checked locally (`php -l`). The test suite was NOT run locally because composer cannot download packages in the sandbox; the first real run is GitHub Actions.
 
 **Next:** Day 13 (block 2, day 4): drag-and-drop board view in React wired to this API, including moving a task (column + position).
+
+## 2026-10-30 — Plan day 13 (block 2, day 4): Drag-and-drop board view
+
+**Built**
+- Backend: `PATCH /api/tasks/{task}/move` (`TaskController@move`, `MoveTaskRequest`). It puts the task at a zero-based index in the target column and renumbers source and target columns to a gap-free 0..n-1 inside a DB transaction. Out-of-range indexes are clamped.
+- 6 feature tests (`TaskMoveApiTest`): cross-column, same-column reorder, clamping, empty column, validation (422), unknown task (404).
+- Frontend: the starter page is replaced by a real board view (`App.jsx`): loads the first board, renders columns side by side, native HTML5 drag-and-drop, loading/empty/error states, optimistic update with rollback on API failure. `api.js` wraps fetch; `board.js` holds the pure `moveTask` function with 5 `node --test` unit tests; Vite proxies `/api` to Laravel. CI now runs `npm test`.
+
+**Concept: optimistic UI + server-owned ordering**
+Optimistic UI means updating the screen immediately and talking to the server in the background; if the server refuses, you roll back to the saved previous state. It feels instant. For that to be safe, the client's prediction (`moveTask`) and the server's real logic must follow the same rule, so both renumber positions the same way. The server stays the source of truth: a "move" is one atomic request (column + index) instead of many small edits, so two users can never leave a column with duplicate or gapped positions.
+
+**Self-check:** Why does `moveTask` return a new board instead of editing the old one, and how does that make the rollback line `setBoard(previous)` work?
+
+**Verification honesty:** frontend `npm test` (5 pass), lint and build run locally and pass; lint shows one non-blocking React warning (setState inside an effect on first load). PHP syntax checked with `php -l`, but the PHP test suite could NOT be run locally (composer downloads time out in the sandbox); the first real run is GitHub Actions. Drag-and-drop was not exercised in a real browser, and native DnD does not work on touch screens.
+
+**Next:** Day 14 (block 2, day 5): create/edit/delete tasks and columns from the UI.

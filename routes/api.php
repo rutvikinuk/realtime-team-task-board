@@ -12,4 +12,5 @@ Route::get('/user', function (Request $request) {
 
 Route::apiResource('boards', BoardController::class);
 Route::apiResource('columns', TaskColumnController::class)->parameters(['columns' => 'taskColumn']);
+Route::patch('tasks/{task}/move', [TaskController::class, 'move']);
 Route::apiResource('tasks', TaskController::class);
