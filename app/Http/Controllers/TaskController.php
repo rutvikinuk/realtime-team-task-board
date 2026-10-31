@@ -36,6 +36,12 @@ class TaskController extends Controller
             'position' => ['nullable', 'integer', 'min:0'],
         ]);
 
+        // Without an explicit position the new task goes to the bottom of its column.
+        if (! isset($validated['position'])) {
+            $max = Task::where('task_column_id', $validated['task_column_id'])->max('position');
+            $validated['position'] = $max === null ? 0 : $max + 1;
+        }
+
         $task = Task::create($validated);
 
         return response()->json($task, 201);
@@ -71,7 +77,20 @@ class TaskController extends Controller
      */
     public function destroy(Task $task)
     {
-        $task->delete();
+        $columnId = $task->task_column_id;
+
+        DB::transaction(function () use ($task, $columnId) {
+            $task->delete();
+
+            // Close the gap so positions stay a gap-free 0..n-1 sequence.
+            $this->renumber(
+                Task::where('task_column_id', $columnId)
+                    ->orderBy('position')
+                    ->orderBy('id')
+                    ->pluck('id')
+                    ->all()
+            );
+        });
 
         return response()->json(null, 204);
     }

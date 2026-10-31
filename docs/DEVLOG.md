@@ -55,3 +55,19 @@ Optimistic UI means updating the screen immediately and talking to the server in
 **Verification honesty:** frontend `npm test` (5 pass), lint and build run locally and pass; lint shows one non-blocking React warning (setState inside an effect on first load). PHP syntax checked with `php -l`, but the PHP test suite could NOT be run locally (composer downloads time out in the sandbox); the first real run is GitHub Actions. Drag-and-drop was not exercised in a real browser, and native DnD does not work on touch screens.
 
 **Next:** Day 14 (block 2, day 5): create/edit/delete tasks and columns from the UI.
+
+## 2026-10-31 — Plan day 14 (block 2, day 5): Create / edit / delete from the UI
+
+**Built**
+- Frontend: add task (per column), rename task, delete task, add column, rename column, delete column (asks for confirmation when the column still has tasks). A small reusable `TitleForm` handles adding and inline renaming (Enter saves, Esc cancels, blank titles blocked).
+- `board.js` gained pure helpers (`addTask`, `updateTask`, `removeTask`, `addColumn`, `updateColumn`, `removeColumn`) with 5 new `node --test` unit tests (10 total). `api.js` gained the matching REST calls.
+- Backend: `POST /api/tasks` without a position now appends to the bottom of the column; `DELETE /api/tasks/{id}` renumbers the column so positions stay gap-free (in a transaction). 5 new PHPUnit tests in `TaskPositioningTest`. Roadmap boxes ticked.
+
+**Concept: optimistic updates vs. waiting for the server**
+Rename and delete are *optimistic*: the UI changes first, the request goes out, and a failure restores the saved previous board and shows an error. Creating is different: the new row's `id` is chosen by the database, so the UI waits for the response and then adds the server's version. Rule of thumb: if the client can predict the result exactly, be optimistic; if the server decides part of the result (ids, positions), wait for it. Also note the deletes rely on `cascadeOnDelete` in the migrations, so deleting a column removes its tasks in the database itself.
+
+**Self-check:** Why does `createTask` use `setBoard((b) => addTask(b, task))` (functional update) instead of `setBoard(addTask(board, task))` after the `await`?
+
+**Verification honesty:** frontend `npm test` (10 pass), lint (same one non-blocking warning as before) and build pass locally. PHP syntax checked with `php -l`, but the PHP tests were NOT run locally (composer packages unavailable in the sandbox); the first real run is GitHub Actions. The new UI was not exercised in a real browser.
+
+**Next:** Day 15 (block 2, day 6): tests for code added this block (fill gaps in backend + frontend coverage).

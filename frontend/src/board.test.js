@@ -42,3 +42,37 @@ test('unknown task or column returns the board unchanged', () => {
   assert.equal(moveTask(board, 999, 20, 0), board)
   assert.equal(moveTask(board, 1, 999, 0), board)
 })
+
+import { addColumn, addTask, removeColumn, removeTask, updateColumn, updateTask } from './board.js'
+
+test('addTask appends to the right column and numbers positions', () => {
+  const next = addTask(make(), { id: 9, task_column_id: 20, title: 'new' })
+  assert.deepEqual(ids(next, 20), [4, 9])
+  assert.equal(next.columns[1].tasks[1].position, 1)
+  assert.deepEqual(ids(next, 10), [1, 2, 3])
+})
+
+test('updateTask changes only the matching task and does not mutate', () => {
+  const board = make()
+  const next = updateTask(board, 2, { title: 'renamed' })
+  assert.equal(next.columns[0].tasks[1].title, 'renamed')
+  assert.equal(board.columns[0].tasks[1].title, undefined)
+})
+
+test('removeTask closes the gap', () => {
+  const next = removeTask(make(), 2)
+  assert.deepEqual(ids(next, 10), [1, 3])
+  assert.deepEqual(next.columns[0].tasks.map((t) => t.position), [0, 1])
+})
+
+test('addColumn defaults to an empty task list', () => {
+  const next = addColumn(make(), { id: 30, title: 'Review' })
+  assert.equal(next.columns.length, 3)
+  assert.deepEqual(next.columns[2].tasks, [])
+})
+
+test('updateColumn renames and removeColumn drops it with its tasks', () => {
+  assert.equal(updateColumn(make(), 10, { title: 'Backlog' }).columns[0].title, 'Backlog')
+  const next = removeColumn(make(), 10)
+  assert.deepEqual(next.columns.map((c) => c.id), [20])
+})

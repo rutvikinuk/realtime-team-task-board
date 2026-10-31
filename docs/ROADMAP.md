@@ -25,8 +25,8 @@ Wire the frontend to the API and get drag-and-drop working against real data.
 - [x] Board view: columns rendered side by side, tasks listed per column
 - [x] Drag-and-drop integrated (native HTML5 drag-and-drop, no library; may swap to `@dnd-kit` for touch support)
 - [x] Moving a card updates `task_column_id` + `position` via the API
-- [ ] Create/edit/delete tasks from the UI
-- [ ] Create/edit/delete columns from the UI
+- [x] Create/edit/delete tasks from the UI
+- [x] Create/edit/delete columns from the UI
 - [x] Basic loading/error states, optimistic UI updates on drag
 - [ ] Simple styling pass (layout, card design, column headers)
 

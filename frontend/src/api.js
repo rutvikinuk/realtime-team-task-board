@@ -16,3 +16,17 @@ export const moveTaskOnServer = (taskId, columnId, position) =>
     method: 'PATCH',
     body: JSON.stringify({ task_column_id: columnId, position }),
   })
+
+const json = (method, body) => ({ method, body: JSON.stringify(body) })
+
+// Tasks endpoints return the bare task; column endpoints wrap it in `data`.
+export const createTask = (columnId, title) =>
+  request('/tasks', json('POST', { task_column_id: columnId, title }))
+export const updateTaskOnServer = (id, changes) => request(`/tasks/${id}`, json('PATCH', changes))
+export const deleteTaskOnServer = (id) => request(`/tasks/${id}`, { method: 'DELETE' })
+
+export const createColumn = (boardId, title) =>
+  request('/columns', json('POST', { board_id: boardId, title })).then((r) => r.data)
+export const updateColumnOnServer = (id, changes) =>
+  request(`/columns/${id}`, json('PATCH', changes)).then((r) => r.data)
+export const deleteColumnOnServer = (id) => request(`/columns/${id}`, { method: 'DELETE' })

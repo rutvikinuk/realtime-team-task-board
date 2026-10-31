@@ -34,3 +34,42 @@ export function moveTask(board, taskId, toColumnId, index) {
 function renumber(col) {
   return { ...col, tasks: col.tasks.map((t, i) => ({ ...t, position: i })) }
 }
+
+// ---- CRUD helpers (all pure: return a new board, never mutate) ----
+
+export function addTask(board, task) {
+  return mapColumns(board, (col) =>
+    col.id === task.task_column_id ? renumber({ ...col, tasks: [...col.tasks, task] }) : col,
+  )
+}
+
+export function updateTask(board, taskId, changes) {
+  return mapColumns(board, (col) => ({
+    ...col,
+    tasks: col.tasks.map((t) => (t.id === taskId ? { ...t, ...changes } : t)),
+  }))
+}
+
+export function removeTask(board, taskId) {
+  return mapColumns(board, (col) =>
+    col.tasks.some((t) => t.id === taskId)
+      ? renumber({ ...col, tasks: col.tasks.filter((t) => t.id !== taskId) })
+      : col,
+  )
+}
+
+export function addColumn(board, column) {
+  return { ...board, columns: [...board.columns, { ...column, tasks: column.tasks ?? [] }] }
+}
+
+export function updateColumn(board, columnId, changes) {
+  return mapColumns(board, (col) => (col.id === columnId ? { ...col, ...changes } : col))
+}
+
+export function removeColumn(board, columnId) {
+  return { ...board, columns: board.columns.filter((c) => c.id !== columnId) }
+}
+
+function mapColumns(board, fn) {
+  return { ...board, columns: board.columns.map(fn) }
+}

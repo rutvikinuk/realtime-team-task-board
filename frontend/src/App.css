@@ -10,3 +10,14 @@ h1 { margin: 0 0 16px; font-size: 28px; }
 .column ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; min-height: 40px; }
 .card { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; box-shadow: var(--shadow); cursor: grab; color: var(--text-h); }
 .card:active { cursor: grabbing; }
+.card { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.card.editing { cursor: default; }
+.card-actions { display: inline-flex; gap: 4px; margin-left: 8px; opacity: 0.6; }
+.card:hover .card-actions, .column h2:hover .card-actions, .card-actions:focus-within { opacity: 1; }
+.card-actions button, .title-form button, .add, .add-column button { font-size: 12px; padding: 2px 8px; cursor: pointer; }
+.column h2 { display: flex; align-items: baseline; }
+.column h2 .card-actions { margin-left: auto; }
+.title-form { display: flex; gap: 4px; flex-wrap: wrap; }
+.title-form input { flex: 1 1 100%; padding: 6px 8px; font: inherit; }
+.add { margin-top: 8px; width: 100%; }
+.add-column { flex: 0 0 200px; }
