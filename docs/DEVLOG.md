@@ -71,3 +71,19 @@ Rename and delete are *optimistic*: the UI changes first, the request goes out, 
 **Verification honesty:** frontend `npm test` (10 pass), lint (same one non-blocking warning as before) and build pass locally. PHP syntax checked with `php -l`, but the PHP tests were NOT run locally (composer packages unavailable in the sandbox); the first real run is GitHub Actions. The new UI was not exercised in a real browser.
 
 **Next:** Day 15 (block 2, day 6): tests for code added this block (fill gaps in backend + frontend coverage).
+
+## 2026-11-01 — Plan day 15 (block 2, day 6): Tests for this block's code
+
+**Built**
+- Backend: `ValidationEdgeCasesTest` (27 tests) covers the error paths of every endpoint: over-long and non-integer input, negative positions, unknown ids (404), failed requests that must not change data, the shape of the move response, moving a task onto its own spot, and a column with gappy positions being healed by a move. `ModelRelationsTest` (5 tests) checks relation ordering (`columns`/`tasks` come back by `position`), the `belongsTo` links, mass-assignment protection and that the factories build a valid Board → Column → Task chain.
+- Frontend: `board.edge.test.js` (13 tests: empty column, negative index, same spot, unknown ids, no mutation) and `api.test.js` (7 tests that replace `fetch` with a fake and check URLs, methods, bodies, `data` unwrapping, 204 handling and error messages). `npm test` went from 10 to 30 tests.
+- `api.js` now reads `import.meta.env?.VITE_API_URL` so the file can be imported under plain Node (Vite still replaces it at build time).
+
+**Concept: testing the unhappy paths**
+Happy-path tests prove the feature works when everything is right; most real bugs live at the edges: empty input, too-long input, ids that do not exist, doing the same thing twice. A good edge test asserts two things: the response is right (422/404, not a 500) *and* nothing was changed in the database. For the frontend, a "fake fetch" test shows how to test code that talks to the network without a server: swap the dependency, record the calls, assert on them.
+
+**Self-check:** Why does `test_move_heals_gaps_in_the_target_column` use `assertEquals` rather than `assertSame` on the id→position map, and which behaviour of `move` is it proving?
+
+**Verification honesty:** frontend `npm test` (30 pass), lint (the same one non-blocking React warning) and build pass locally. The PHP files pass `php -l`, but the PHP test suite was NOT run locally (composer packages cannot be downloaded in the sandbox); the first real run is GitHub Actions. I wrote the expectations by reading the controllers and form requests, so a failing assertion there would point to a wrong test rather than a known bug.
+
+**Next:** Day 16 (block 2, day 7): security pass — validation review, rate limiting, CORS, dependency audits.
