@@ -95,7 +95,7 @@ Happy-path tests prove the feature works when everything is right; most real bug
 - Rate limiting: all `/api` routes now go through `throttle:api` (120 requests/min per IP, `API_RATE_LIMIT`), answered with 429 when exceeded.
 - CORS: new `config/cors.php` that only allows the origins in `CORS_ALLOWED_ORIGINS` (the Vite dev server by default), no credentials.
 - `SecurityHeaders` middleware adds `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy` and a strict CSP to every response.
-- Dependencies: `npm audit` found 2 high advisories in `vite`; `npm audit fix` bumped it and the audit is now clean. CI has a new `Dependency audit` job (`composer audit --locked` + `npm audit --audit-level=high`).
+- Dependencies: `npm audit` found 2 high advisories in `vite`; `npm audit fix` bumped it and the audit is now clean. The new CI audit job immediately found 4 advisories in 3 locked PHP packages (league/commonmark, symfony/http-foundation, symfony/mime); they were updated in `composer.lock` through a temporary workflow (since deleted) and `composer audit` passes. CI has a new `Dependency audit` job (`composer audit --locked` + `npm audit --audit-level=high`).
 - 8 new tests in `SecurityHardeningTest`; `docs/SECURITY.md` lists what is covered and the known gaps.
 
 **Concept: defence in depth**
@@ -103,6 +103,6 @@ No single control makes an app "secure". You stack small layers so one failure i
 
 **Self-check:** Why does CORS not stop an attacker from calling your API with `curl`, and which layer would?
 
-**Verification honesty:** frontend `npm test`, lint and build pass locally after the vite bump. The PHP files pass `php -l`, but composer could not download packages in the sandbox, so the PHP test suite (including the 8 new tests) was NOT run locally; the first real run is GitHub Actions. The CORS and throttling tests in particular are written from my reading of how Laravel's middleware works and may need a fix after the first CI run. `composer audit` has not been run yet either.
+**Verification honesty:** frontend `npm test`, lint and build pass locally after the vite bump. The PHP files pass `php -l`, but composer could not download packages in the sandbox, so the PHP test suite (including the 8 new tests) was NOT run locally; the first real run is GitHub Actions. The CORS and throttling tests in particular are written from my reading of how Laravel's middleware works and may need a fix after the first CI run. The backend tests passed in CI on the first push (before the lock update); the CI run after the lock update is checked separately.
 
 **Next:** Day 17 (block 2, day 8): Dockerfile + CI extension (Docker build and smoke test).
