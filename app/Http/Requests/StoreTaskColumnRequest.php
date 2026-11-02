@@ -19,7 +19,7 @@ class StoreTaskColumnRequest extends FormRequest
         return [
             'board_id' => ['required', 'integer', 'exists:boards,id'],
             'title' => ['required', 'string', 'max:255'],
-            'position' => ['nullable', 'integer', 'min:0'],
+            'position' => ['nullable', 'integer', 'min:0', 'max:1000000'],
         ];
     }
 }

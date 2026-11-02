@@ -17,6 +17,8 @@ class TaskColumnController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
+        $request->validate(['board_id' => ['nullable', 'integer']]);
+
         $query = TaskColumn::query();
 
         if ($request->filled('board_id')) {

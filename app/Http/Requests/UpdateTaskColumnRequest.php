@@ -20,7 +20,7 @@ class UpdateTaskColumnRequest extends FormRequest
     {
         return [
             'title' => ['sometimes', 'required', 'string', 'max:255'],
-            'position' => ['sometimes', 'integer', 'min:0'],
+            'position' => ['sometimes', 'integer', 'min:0', 'max:1000000'],
         ];
     }
 }

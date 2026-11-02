@@ -18,7 +18,7 @@ class MoveTaskRequest extends FormRequest
     {
         return [
             'task_column_id' => ['required', 'integer', 'exists:task_columns,id'],
-            'position' => ['required', 'integer', 'min:0'],
+            'position' => ['required', 'integer', 'min:0', 'max:1000000'],
         ];
     }
 }

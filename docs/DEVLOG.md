@@ -87,3 +87,22 @@ Happy-path tests prove the feature works when everything is right; most real bug
 **Verification honesty:** frontend `npm test` (30 pass), lint (the same one non-blocking React warning) and build pass locally. The PHP files pass `php -l`, but the PHP test suite was NOT run locally (composer packages cannot be downloaded in the sandbox); the first real run is GitHub Actions. I wrote the expectations by reading the controllers and form requests, so a failing assertion there would point to a wrong test rather than a known bug.
 
 **Next:** Day 16 (block 2, day 7): security pass — validation review, rate limiting, CORS, dependency audits.
+
+## 2026-11-02 — Plan day 16 (block 2, day 7): Security pass
+
+**Built**
+- Validation: task descriptions are capped (10 000 chars), `position` is capped at 1 000 000 everywhere, `task_column_id` must be an integer, and the `?task_column_id=` / `?board_id=` list filters are validated as integers (422 instead of passing junk to the database).
+- Rate limiting: all `/api` routes now go through `throttle:api` (120 requests/min per IP, `API_RATE_LIMIT`), answered with 429 when exceeded.
+- CORS: new `config/cors.php` that only allows the origins in `CORS_ALLOWED_ORIGINS` (the Vite dev server by default), no credentials.
+- `SecurityHeaders` middleware adds `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy` and a strict CSP to every response.
+- Dependencies: `npm audit` found 2 high advisories in `vite`; `npm audit fix` bumped it and the audit is now clean. CI has a new `Dependency audit` job (`composer audit --locked` + `npm audit --audit-level=high`).
+- 8 new tests in `SecurityHardeningTest`; `docs/SECURITY.md` lists what is covered and the known gaps.
+
+**Concept: defence in depth**
+No single control makes an app "secure". You stack small layers so one failure is not a disaster: validation stops bad data at the door, parameter binding stops SQL injection even if validation misses something, rate limiting slows down abuse and brute force, CORS tells *browsers* which websites may call your API (it does not protect against curl or other servers), and response headers tell browsers not to sniff, frame or execute things. Dependency audits cover the code you did not write. The most important gap is still the biggest layer: there is no authentication yet, so every control above is only a fence around an open door.
+
+**Self-check:** Why does CORS not stop an attacker from calling your API with `curl`, and which layer would?
+
+**Verification honesty:** frontend `npm test`, lint and build pass locally after the vite bump. The PHP files pass `php -l`, but composer could not download packages in the sandbox, so the PHP test suite (including the 8 new tests) was NOT run locally; the first real run is GitHub Actions. The CORS and throttling tests in particular are written from my reading of how Laravel's middleware works and may need a fix after the first CI run. `composer audit` has not been run yet either.
+
+**Next:** Day 17 (block 2, day 8): Dockerfile + CI extension (Docker build and smoke test).
